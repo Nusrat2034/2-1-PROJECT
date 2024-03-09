@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Details</title>
+  <style>
+    body {
+      background-image:url('//cdn.wallpapersafari.com/2/92/fd0CR4.jpg');
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .book-details {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    .book-cover {
+      max-width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Book Details</h1>
+    <% if (bookDetails) { %>
+    <div class="book-details">
+      <img class="book-cover" src="<%= bookDetails[7] %>" alt="Book Cover">
+      <h2><%= bookDetails[1] || 'N/A' %></h2>
+      <p><strong>Edition:</strong> <%= bookDetails[2] || 'N/A' %></p>
+      <p><strong>Price:</strong> $<%= bookDetails[3] || 'N/A' %></p>
+      <p><strong>Status:</strong> <%= bookDetails[4] || 'N/A' %></p>
+      <p><strong>Stock:</strong> <%= bookDetails[5] || 'N/A' %></p>
+      <p><strong>Discount:</strong> <%= bookDetails[6] ? bookDetails[6] + '%' : 'N/A' %></p>
+      <p><strong>Authors:</strong> <%= bookDetails[8] || 'N/A' %></p>
+      <p><strong>Publisher:</strong> <%= bookDetails[9] || 'N/A' %></p>
+      <p><strong>Category:</strong> <%= bookDetails[10] || 'N/A' %></p>
+    </div>
+    <% } else { %>
+    <p>Book details not available.</p>
+    <% } %>
+  </div>
+</body>
+</html>

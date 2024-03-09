@@ -1,0 +1,192 @@
+--CALCULATE_AVERAGE_RATING Function
+CREATE OR REPLACE FUNCTION CALCULATE_AVERAGE_RATING(p_isbn IN VARCHAR2)
+RETURN NUMBER IS
+  average_rating NUMBER;
+	v_next_log_id NUMBER;
+BEGIN
+  SELECT NVL(MAX(LOG_ID), 0) + 1 INTO v_next_log_id FROM PROCEDURE_FUNCTION_LOG;
+  INSERT INTO PROCEDURE_FUNCTION_LOG (LOG_ID,PROCEDURE_FUNCTION_NAME, USERNAME, PARAMETERS)
+  VALUES (v_next_log_id,'CALCULATE_AVERAGE_RATING', USER, 'p_isbn=' || p_isbn);
+	COMMIT;
+
+  SELECT AVG(RATING)
+  INTO average_rating
+  FROM CUSTOMER_REVIEW
+  WHERE ISBN = p_isbn;
+	
+	IF average_rating IS NULL THEN
+    return 0;
+  ELSE
+    RETURN average_rating;
+  END IF;
+END;
+
+
+
+
+
+
+
+--CALCULATE_ORDER_TOTAL_PRICE_AMOUNT Function
+CREATE OR REPLACE FUNCTION CALCULATE_ORDER_TOTAL_PRICE_AMOUNT(order_id_param IN NUMBER)
+RETURN NUMBER IS
+  total_amount NUMBER := 0;
+	v_next_log_id NUMBER;
+BEGIN
+  SELECT NVL(MAX(LOG_ID), 0) + 1 INTO v_next_log_id FROM PROCEDURE_FUNCTION_LOG;
+  INSERT INTO PROCEDURE_FUNCTION_LOG (LOG_ID,PROCEDURE_FUNCTION_NAME, USERNAME, PARAMETERS)
+  VALUES (v_next_log_id,'CALCULATE_ORDER_TOTAL_PRICE_AMOUNT', USER, 'order_id_param=' || order_id_param);
+	COMMIT;
+
+  SELECT SUM(ROUND((b.PRICE - (b.PRICE * (NVL(b.DISCOUNT,0)/100))) * oi.BOOK_COUNT, 2)) INTO total_amount
+  FROM ORDERED_ITEMS oi
+  JOIN BOOKS b ON oi.ISBN = b.ISBN
+  WHERE oi.ORDER_ID = order_id_param
+  GROUP BY oi.ORDER_ID;
+  
+  RETURN total_amount;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RETURN -1;
+  WHEN OTHERS THEN
+    RETURN -2;
+END;
+
+
+
+
+
+
+
+
+--CALCULATE_TOTAL_BOOKS_SOLD Functions
+CREATE OR REPLACE FUNCTION CALCULATE_TOTAL_BOOKS_SOLD(strStartDate IN VARCHAR2, strEndDate IN VARCHAR2) 
+RETURN NUMBER
+IS
+  startDate DATE := TO_DATE(strStartDate, 'YYYY-MM-DD');
+  endDate DATE := TO_DATE(strEndDate, 'YYYY-MM-DD');
+  total_books_sold NUMBER := 0;
+	v_next_log_id NUMBER;
+BEGIN
+  SELECT NVL(MAX(LOG_ID), 0) + 1 INTO v_next_log_id FROM PROCEDURE_FUNCTION_LOG;
+  INSERT INTO PROCEDURE_FUNCTION_LOG (LOG_ID,PROCEDURE_FUNCTION_NAME, USERNAME,  PARAMETERS)
+  VALUES (v_next_log_id,'CALCULATE_TOTAL_BOOKS_SOLD', USER, 'strStartDate=' || strStartDate || 
+	' ,strEndDate='  ||strEndDate);
+  COMMIT;
+
+
+  SELECT SUM(BOOK_COUNT) INTO total_books_sold
+  FROM ORDERS o
+  JOIN ORDERED_ITEMS oi ON o.ORDER_ID = oi.ORDER_ID
+  WHERE o.ORDER_DATE >= startDate AND o.ORDER_DATE <= endDate;
+
+  RETURN NVL(total_books_sold, 0);
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN -1;
+END;
+
+
+
+
+
+
+
+
+
+--CALCULATE_TOTAL_ORDER Function
+CREATE OR REPLACE FUNCTION CALCULATE_TOTAL_ORDER (strStartDate IN VARCHAR2,strEndDate IN VARCHAR2) 
+RETURN NUMBER IS
+  totalOrders NUMBER;
+  startDate DATE := TO_DATE(strStartDate, 'YYYY-MM-DD');
+  endDate DATE := TO_DATE(strEndDate, 'YYYY-MM-DD');
+	v_next_log_id NUMBER;
+BEGIN
+  SELECT NVL(MAX(LOG_ID), 0) + 1 INTO v_next_log_id FROM PROCEDURE_FUNCTION_LOG;
+  INSERT INTO PROCEDURE_FUNCTION_LOG (LOG_ID,PROCEDURE_FUNCTION_NAME, USERNAME,  PARAMETERS)
+  VALUES (v_next_log_id,'CALCULATE_TOTAL_ORDER', USER, 'strStartDate=' || strStartDate || ' , strEndDate='  || strEndDate);
+	COMMIT;
+  
+  SELECT COUNT(*) INTO totalOrders
+  FROM ORDERS
+  WHERE ORDER_DATE >= startDate AND ORDER_DATE <= endDate;
+  
+  RETURN totalOrders;
+END;
+
+
+
+
+
+
+
+
+--CALCULATE_TOTAL_REVENUE Function
+CREATE OR REPLACE FUNCTION CALCULATE_TOTAL_REVENUE(strStartdate IN VARCHAR2, strEnddate IN VARCHAR2) 
+RETURN NUMBER
+IS
+  startDate DATE := TO_DATE(strStartdate, 'YYYY-MM-DD');
+  endDate DATE := TO_DATE(strEnddate, 'YYYY-MM-DD');
+  total_revenue NUMBER := 0;
+	v_next_log_id NUMBER;
+BEGIN
+  SELECT NVL(MAX(LOG_ID), 0) + 1 INTO v_next_log_id FROM PROCEDURE_FUNCTION_LOG;
+  INSERT INTO PROCEDURE_FUNCTION_LOG (LOG_ID,PROCEDURE_FUNCTION_NAME, USERNAME,  PARAMETERS)
+  VALUES (v_next_log_id,'CALCULATE_TOTAL_REVENUE', USER, 'strStartdate=' || strStartdate || ' , strEnddate='  || strEnddate);
+	COMMIT;
+
+  SELECT SUM(p.TOTAL_AMOUNT) INTO total_revenue
+  FROM PAYMENTS p
+  JOIN ORDERS o ON p.ORDER_ID = o.ORDER_ID
+  WHERE o.ORDER_DATE >= startDate AND o.ORDER_DATE <= endDate;
+
+  RETURN NVL(total_revenue, 0);
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN -1;
+END;
+
+
+
+
+
+
+
+
+--INSERT_ORDERS_TABLE Function
+CREATE OR REPLACE FUNCTION INSERT_ORDERS_TABLE(p_user_id NUMBER)
+RETURN NUMBER
+IS
+  v_destination_address VARCHAR2(500);
+  v_order_id NUMBER;
+  v_next_order_id NUMBER;
+	v_next_log_id NUMBER;
+BEGIN
+  SELECT NVL(MAX(LOG_ID), 0) + 1 INTO v_next_log_id FROM PROCEDURE_FUNCTION_LOG;
+  INSERT INTO PROCEDURE_FUNCTION_LOG (LOG_ID,PROCEDURE_FUNCTION_NAME, USERNAME,  PARAMETERS)
+  VALUES (v_next_log_id,'INSERT_ORDERS_TABLE', USER, 'p_user_id=' || p_user_id);
+	COMMIT;
+	
+	
+  SELECT NVL(MAX(ORDER_ID), 0) + 1
+  INTO v_next_order_id
+  FROM ORDERS;
+
+  SELECT STREET || ',' || CITY || ',' || COUNTRY
+  INTO v_destination_address
+  FROM USERS
+  WHERE user_id = p_user_id;
+
+  INSERT INTO ORDERS (ORDER_ID, user_id, TOTAL_AMOUNT, DESTINATION_ADDRESS, IF_PAID, DELIVARY_STATUS)
+  VALUES (v_next_order_id, p_user_id, 0, v_destination_address, 'Yes', 'Delivered');
+	COMMIT;
+
+  RETURN v_next_order_id;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RETURN -1;
+	WHEN TOO_MANY_ROWS THEN
+	  RETURN -2;
+  WHEN OTHERS THEN
+    RETURN -3;
+END;

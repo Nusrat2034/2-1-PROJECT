@@ -1,0 +1,12 @@
+--Scheduler
+BEGIN
+  DBMS_SCHEDULER.CREATE_JOB (
+    job_name        => 'delete_marked_accounts_job',
+    job_type        => 'PLSQL_BLOCK',
+    job_action      => 'BEGIN delete_marked_accounts; END;',
+    start_date      => SYSTIMESTAMP,
+    repeat_interval => 'FREQ=MINUTELY; INTERVAL=3',
+    enabled         => TRUE,
+    comments        => 'Job to delete user accounts marked for deletion if not logged in for 5 minutes, runs every 3 minutes'
+  );
+END;

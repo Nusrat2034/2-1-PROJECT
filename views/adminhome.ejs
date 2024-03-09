@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://maluje.pl/environment/cache/images/300_300_productGfx_531d0f226b83e17fd8da63f864edf24b.jpg?fbclid=IwAR3VXBfVUZkYc5JQRm9gLfg-zJmXTPGvqNcX23kF9Tv7UETyczDWeC5X_ok');
+            background-size:cover;
+            background-position: center;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 50px;
+        }
+        .button {
+            width: 150px;
+            padding: 10px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .container-fluid > ul:first-child {
+            padding-bottom: 0;
+        }
+        .container {
+            max-width: none;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><strong>Welcome Admin</strong></li>
+        </ul>
+        <div>
+            <button id="logout" class="btn btn-outline-success my-2 my-sm-0" type="button">Log Out</button>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="grid">
+            <div>
+                <button id="showallbooks" class="btn btn-outline-success my-2 my-sm-0" type="button">Show ALL Books</button>
+            </div>
+            <div>
+                <button id="showallusers" class="btn btn-outline-success my-2 my-sm-0" type="button">Show All Users</button>
+            </div>
+            <div>
+                <button id="showreviews" class="btn btn-outline-success my-2 my-sm-0" type="button">Show All Reviews</button>
+            </div>
+            <div>
+                <button id="showrequestbooks" class="btn btn-outline-success my-2 my-sm-0" type="button">Show All Requested Books</button>
+            </div>
+            <div>
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" class="form-control">
+            </div>
+            <div>
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" class="form-control">
+            </div>
+            <div class="mt-4">
+                <label for="totalorder">Total Order:</label>
+                <input type="text" id="totalorder" class="form-control" readonly>
+            </div>
+            <div>
+                <button id="totalorderbtn" class="btn btn-success">Total Order Button</button>
+            </div>
+
+            <div class="mt-4">
+                <label for="totalsale">Total Sale:</label>
+                <input type="text" id="totalsale" class="form-control" readonly>
+            </div>
+            <div>
+                <button id="totalsalebtn" class="btn btn-success">Total Sale Button</button>
+            </div>
+
+            <div class="mt-4">
+                <label for="totalmoney">Total Money:</label>
+                <input type="text" id="totalmoney" class="form-control" readonly>
+            </div>
+            <div>
+                <button id="totalmoneybtn" class="btn btn-success">Toatl Mney Button</button>
+            </div>
+        </div>
+    </main>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#logout').on('click', function() { 
+                window.location.href = '/logout';
+            });
+
+            $('#showallbooks').on('click', function() { 
+                window.location.href = '/allbooks';
+            });
+
+            $('#showallusers').on('click', function() { 
+                window.location.href = '/allusers';
+            });
+
+            $('#showreviews').on('click', function() { 
+                window.location.href = '/review';
+            });
+            $('#showrequestbooks').on('click', function() { 
+                window.location.href = '/adminreq';
+            });
+
+            $('#totalorderbtn').on('click', function() {
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+            $.ajax({
+                url: '/totalorder',
+                method: 'POST',
+                data: { startDate: startDate, endDate: endDate },
+                success: function(response) {
+                    $('#totalorder').val(response.totalOrder);
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+
+        $('#totalsalebtn').on('click', function() {
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+            $.ajax({
+                url: '/totalsale',
+                method: 'POST',
+                data: { startDate: startDate, endDate: endDate },
+                success: function(response) {
+                    $('#totalsale').val(response.totalSale);
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+
+        $('#totalmoneybtn').on('click', function() {
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+            $.ajax({
+                url: '/totalmoney',
+                method: 'POST',
+                data: { startDate: startDate, endDate: endDate },
+                success: function(response) {
+                    $('#totalmoney').val(response.totalMoney);
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+--INSERT_ORDERED_ITEMS_TABLE Procedure
+CREATE OR REPLACE PROCEDURE INSERT_ORDERED_ITEMS_TABLE (p_order_id IN NUMBER, p_isbn IN VARCHAR2, p_book_count IN NUMBER, msg OUT VARCHAR2) IS
+    v_stock NUMBER;
+		v_next_log_id NUMBER;
+BEGIN
+    SELECT STOCK INTO v_stock FROM BOOKS WHERE ISBN = p_isbn;
+    
+    IF p_book_count <= 0 THEN
+        msg := 'Number of books must be greater than zero';
+    ELSIF p_book_count > v_stock THEN
+        msg := 'Book count exceeds available stock';
+    ELSE
+        INSERT INTO ORDERED_ITEMS (ORDER_ID, ISBN, BOOK_COUNT)
+        VALUES (p_order_id, p_isbn, p_book_count);
+        msg := 'Insertion successful';
+    END IF;
+    
+    
+		SELECT NVL(MAX(LOG_ID), 0) + 1 INTO v_next_log_id FROM PROCEDURE_FUNCTION_LOG;
+    INSERT INTO PROCEDURE_FUNCTION_LOG (LOG_ID,PROCEDURE_FUNCTION_NAME, USERNAME, PARAMETERS)
+    VALUES (v_next_log_id,'INSERT_ORDERED_ITEMS_TABLE', USER, 'p_order_id=' || p_order_id || ', p_isbn=' || p_isbn || ', p_book_count=' || p_book_count);
+		COMMIT;
+    
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        msg := 'Book not found';
+    WHEN TOO_MANY_ROWS THEN
+        msg := 'Multiple books found with the same ISBN';
+    WHEN OTHERS THEN
+        msg := 'Some unknown error occurred';
+END;
+
+
+
+
+
+
+
+
+
+
+--INCREASE_ALL_BOOKS_DISCOUNT Procedure
+CREATE OR REPLACE PROCEDURE INCREASE_ALL_BOOKS_DISCOUNT(p_increase_amount IN NUMBER) IS
+  v_next_log_id NUMBER;
+BEGIN
+  UPDATE BOOKS
+  SET DISCOUNT = CASE 
+                   WHEN DISCOUNT + p_increase_amount > 50 THEN 50
+                   ELSE DISCOUNT + p_increase_amount
+                 END;
+  COMMIT;
+	
+	SELECT NVL(MAX(LOG_ID), 0) + 1 INTO v_next_log_id FROM PROCEDURE_FUNCTION_LOG;
+  INSERT INTO PROCEDURE_FUNCTION_LOG (LOG_ID,PROCEDURE_FUNCTION_NAME, USERNAME, PARAMETERS)
+  VALUES (v_next_log_id,'INCREASE_ALL_BOOKS_DISCOUNT', USER, 'p_increase_amount=' || p_increase_amount );
+	COMMIT;
+EXCEPTION
+  WHEN OTHERS THEN
+    ROLLBACK;
+END;
+
+
+
+
+
+
+
+--DECREASE_ALL_BOOKS_DISCOUNT Procedure
+CREATE OR REPLACE PROCEDURE DECREASE_ALL_BOOKS_DISCOUNT(p_decrease_amount IN NUMBER) IS
+  v_next_log_id NUMBER;
+BEGIN
+  UPDATE BOOKS
+  SET DISCOUNT = CASE 
+                   WHEN DISCOUNT - p_decrease_amount < 0 THEN 0
+                   ELSE DISCOUNT - p_decrease_amount
+                 END;
+  COMMIT;
+	
+	SELECT NVL(MAX(LOG_ID), 0) + 1 INTO v_next_log_id FROM PROCEDURE_FUNCTION_LOG;
+  INSERT INTO PROCEDURE_FUNCTION_LOG (LOG_ID,PROCEDURE_FUNCTION_NAME, USERNAME, PARAMETERS)
+  VALUES (v_next_log_id,'DECREASE_ALL_BOOKS_DISCOUNT', USER, 'p_decrease_amount=' || p_decrease_amount );
+	COMMIT;
+EXCEPTION
+  WHEN OTHERS THEN
+    ROLLBACK;
+END;
+
+
+
+
+
+
+--INSERT_PAYMENTS_TABLE Procedure
+CREATE OR REPLACE PROCEDURE INSERT_PAYMENTS_TABLE (p_order_id IN NUMBER, p_user_id IN NUMBER, p_total_amount IN NUMBER, msg OUT VARCHAR2) IS
+    v_payment_id NUMBER;
+		v_next_log_id NUMBER;
+BEGIN
+    IF p_order_id <= 0 THEN
+		   msg := 'Order id must be greater than zero';
+	  ELSIF p_total_amount <= 0 THEN
+		   msg := 'Total price must be greater than zero';
+	  ELSE
+		   SELECT NVL(MAX(PAYMENT_ID), 0) + 1
+       INTO v_payment_id
+       FROM PAYMENTS;
+    
+       INSERT INTO PAYMENTS (PAYMENT_ID, ORDER_ID, user_id, PAYMENT_METHOD, TOTAL_AMOUNT)
+       VALUES (v_payment_id, p_order_id, p_user_id, 'Cash on Delivery', p_total_amount);
+       COMMIT;
+       msg := 'Data inserted successfully in PAYMENTS table';
+		 END IF;
+		 
+		 SELECT NVL(MAX(LOG_ID), 0) + 1 INTO v_next_log_id FROM PROCEDURE_FUNCTION_LOG;
+     INSERT INTO PROCEDURE_FUNCTION_LOG (LOG_ID,PROCEDURE_FUNCTION_NAME, USERNAME,  PARAMETERS)
+     VALUES (v_next_log_id,'INSERT_PAYMENTS_TABLE', USER, 'p_order_id=' || p_order_id || ' , p_user_id='  || p_user_id || ' ,p_total_amount=' || p_total_amount);
+		 COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        msg := 'Some unknown error occurred';
+END;
+
+
+
+
+
+
+--REMOVE_ITEM_FROM_CART Procedure
+CREATE OR REPLACE PROCEDURE REMOVE_ITEM_FROM_CART(p_user_id IN NUMBER, p_isbn IN VARCHAR2, msg OUT VARCHAR2)
+IS
+    v_cart_id NUMBER;
+		v_next_log_id NUMBER;
+BEGIN
+    SELECT CART_ID INTO v_cart_id FROM CART WHERE USER_ID = p_user_id;
+		
+    DELETE FROM IN_CART_ITEMS WHERE CART_ID = v_cart_id AND ISBN = p_isbn;
+    
+		msg := 'Item deleted from cart successfully';
+    COMMIT;
+		
+		SELECT NVL(MAX(LOG_ID), 0) + 1 INTO v_next_log_id FROM PROCEDURE_FUNCTION_LOG;
+    INSERT INTO PROCEDURE_FUNCTION_LOG (LOG_ID,PROCEDURE_FUNCTION_NAME, USERNAME, PARAMETERS)
+    VALUES (v_next_log_id,'REMOVE_ITEM_FROM_CART', USER, 'p_user_id=' || p_user_id || ' ,p_isbn=' || p_isbn );
+	  COMMIT;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        msg := 'No cart found for the given user ID.';
+    WHEN OTHERS THEN
+         msg := 'Some unknown error occurred';
+END;
+
+
+
+
+
+
+
+--delete_marked_accounts Procedure(Used in scheduler)
+CREATE OR REPLACE PROCEDURE delete_marked_accounts IS
+BEGIN
+  DELETE FROM users
+  WHERE deletion_requested IS NOT NULL
+    AND (last_login IS NULL OR last_login <= deletion_requested)
+    AND deletion_requested < SYSTIMESTAMP - INTERVAL '5' MINUTE;
+END;

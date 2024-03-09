@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="your-auth.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALL BOOKS </title>
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <style>
+        body {
+           background-image: url('https://png.pngtree.com/thumb_back/fw800/background/20210430/pngtree-old-brown-paper-texture-background-psd-image_692126.jpg');
+        }
+        .navbar-brand {
+            font-size: 2em;
+            font-weight: bold;
+            color: #12a512;
+        }
+        .nav-link {
+            color: #c72576;
+        }
+        .nav-link:hover {
+            color: #6eb81f;
+        }
+        .search-panel {
+            border-right: 2px solid #ddd;
+            padding-right: 20px;
+        }
+        .selected {
+        background-color: #6e9276; 
+        }
+        .results {
+            padding-left: 20px;
+        }
+        .search-input {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<script>
+    $(document).ready(function() {
+        function updateTable(results) {
+            $('#booksTableBody').empty();
+            results.forEach(function(book) {
+                const row = $('<tr>');
+                row.append($('<td>').text(book.ISBN)); 
+                row.append($('<td>').text(book.TITLE));
+                row.append($('<td>').text(book.EDITION));
+                row.append($('<td>').text('$' + parseFloat(book.PRICE).toFixed(2)));
+                row.append($('<td>').text(book.STATUS));
+                row.append($('<td>').text(book.STOCK));
+                row.append($('<td>').text(parseFloat(book.DISCOUNT).toFixed(2) + '%'));
+                $('#booksTableBody').append(row);
+            });
+        }
+
+        function fetchAllBooksAndUpdateTable() {
+            $.get('/home', function(books) {
+                updateTable(books);
+            });
+        }
+
+
+$('#searchButton').on('click', function() {
+    const name = $('#searchName').val().toLowerCase();
+    const author = $('#searchAuthor').val().toLowerCase();
+    const category = $('#searchCategory').val().toLowerCase();
+    const publisher = $('#searchPublisher').val().toLowerCase();
+    const lowPrice = parseFloat($('#searchLowPrice').val());
+    const highPrice = parseFloat($('#searchHighPrice').val());
+    $.get('/search', { name, author, category, publisher, lowPrice, highPrice })
+        .done(function(results) {
+            updateTable(results);
+        })
+        .fail(function(error) {
+            console.error('Error during search:', error);
+        });
+});
+
+$('#booksTableBody').on('click', 'tr', function() {
+    $('tr').removeClass('selected');
+    $(this).addClass('selected');
+});
+
+function getSelectedRowInfo() {
+    var selectedRow = $('.selected');
+    return {
+        isbn: selectedRow.find('td:eq(0)').text(),
+        edition: selectedRow.find('td:eq(2)').text(),
+        price: parseFloat(selectedRow.find('td:eq(3)').text().replace('$', '')),
+        status: selectedRow.find('td:eq(4)').text(),
+        stock: parseInt(selectedRow.find('td:eq(5)').text()),
+        discount: parseFloat(selectedRow.find('td:eq(6)').text().replace('%', ''))
+    };
+}
+
+$('#editBookInfo').on('click', function() {
+    const selectedRowInfo = getSelectedRowInfo();
+    const newEdition = $('#newEdition').val();
+    const newPrice = $('#newPrice').val();
+    const newStock = $('#newStock').val();
+    const newDiscount = $('#newDiscount').val();
+    const newData = {
+        isbn: selectedRowInfo.isbn,
+        edition: newEdition,
+        price: newPrice,
+        stock: newStock,
+        discount: newDiscount
+    };
+    $.post('/updateBookInfo', newData)
+    .done(function(response) {
+        alert(response.message);
+    })
+    .fail(function(error) {
+        console.error('Error updating book info:', error);
+        alert('An error occurred while updating the book info.');
+    });
+});
+
+$('#addNewBook').on('click', function() {
+    window.location.href = '/addnewbook';
+});
+
+$('#deleteBook').on('click', function() {
+    const selectedRowInfo = getSelectedRowInfo();
+    $.post('/deleteBook', { selectedRowInfo })
+        .done(function(response) {
+            alert(response.message);
+        })
+        .fail(function(error) {
+            console.error('Error deleting book:', error);
+            alert('An error occurred while deleting the book.');
+        });
+});
+
+
+$('#indisbtn').on('click', function() {
+    const dis = $('#indis').val();
+$.post('/increasedis', {dis:dis})
+    .done(function(response) {
+    })
+    .fail(function(error) {
+        console.error('Error posting review:', error);
+    });
+});
+
+$('#dedisbtn').on('click', function() {
+    const dis = $('#dedis').val();
+$.post('/decreasedis', {dis:dis})
+    .done(function(response) {
+    })
+    .fail(function(error) {
+        console.error('Error posting review:', error);
+    });
+});
+
+
+$('#getAvgRating').on('click', function() {
+        const selectedRowInfo = getSelectedRowInfo();
+        $.post('/avgrating', { isbn: selectedRowInfo.isbn })
+            .done(function(response) {
+                $('#avgrating').val(response.avgrating);
+            })
+            .fail(function(error) {
+                console.error('Error fetching average rating:', error);
+                alert('An error occurred while fetching the average rating.');
+            });
+    });
+
+});
+
+</script>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">BOOKBYTE FOR ADMIN</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <div class="row">
+              
+        <div class="col-md-4 search-panel">
+          <h5>Search Books</h5>
+          <input id="searchName" class="form-control search-input" type="text" placeholder="By Name" aria-label="Search by name">
+        <input id="searchAuthor" class="form-control search-input" type="text" placeholder="By Author" aria-label="Search by author">
+        <input id="searchCategory" class="form-control search-input" type="text" placeholder="By Category" aria-label="Search by category">
+        <input id="searchPublisher" class="form-control search-input" type="text" placeholder="By Publisher" aria-label="Search by Publisher">
+        <input id="searchLowPrice" class="form-control search-input" type="number" placeholder="Low Price" aria-label="Search by low price" style="width: 48%;">
+        <input id="searchHighPrice" class="form-control search-input" type="number" placeholder="High Price" aria-label="Search by high price" style="width: 48%;">
+        <button id="searchButton" class="btn btn-outline-success my-2 my-sm-0" type="button">Search</button>
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <button id="addNewBook" class="btn btn-primary">Add New Book</button>
+                <button id="deleteBook" class="btn btn-danger">Delete Book</button>
+                <button id="editBookInfo" class="btn btn-success">Edit Book</button>
+            </div>
+        </div>
+        
+<div class="flex mb-2">
+    <input class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="newEdition" type="number" placeholder="New Edition">
+</div>
+
+
+<div class="flex mb-2">
+    <input class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="newPrice" type="number" placeholder="New Price">
+</div>
+
+
+<div class="flex mb-2">
+    <input class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="newStock" type="number" placeholder="New Stock">
+</div>
+
+
+<div class="flex mb-2">
+    <input class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="newDiscount" type="number" placeholder="New Discount">
+</div>
+<div class="mt-4">
+    <label for="avgrating">Average Rating:</label>
+    <input type="text" id="avgrating" class="form-control" readonly>
+</div>
+<div>
+    <button id="getAvgRating" class="btn btn-success">Get Average Rating</button>
+</div>
+<div class="col-md-4">
+    <input type="number" id="indis" class="form-control" placeholder="indis">
+    <button id="indisbtn" class="btn btn-primary mt-2">Increase Discount</button>
+</div> 
+
+<div class="col-md-4">
+    <input type="number" id="dedis" class="form-control" placeholder="dedis">
+    <button id="dedisbtn" class="btn btn-primary mt-2">Decrease Discount</button>
+</div>
+</div>
+
+
+            
+            <div class="col-md-8">
+                
+                <h5 class="mt-4">Book Inventory</h5>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">ISBN</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Edition</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Stock</th>
+                            <th scope="col">Discount</th>
+                        </tr>
+                    </thead>
+                        
+                        <tbody id="booksTableBody">
+                          <% books.forEach(function(book) { %>
+                              <tr>
+                                 <td><%= book[0] %></td>
+                                  <td><%= book[1] %></td> 
+                                  <td><%= book[2] %></td> 
+                                  <td>$<%= parseFloat(book[6]).toFixed(2) %></td> 
+                                  <td><%= book[7] %></td> 
+                                  <td><%= book[8] %></td> 
+                                  <td><%= parseFloat(book[9]).toFixed(2) %>%</td>
+                              </tr>
+                          <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+

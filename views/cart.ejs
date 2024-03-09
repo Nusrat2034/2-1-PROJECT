@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Cart</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+           background-image: url('https://images.freeimages.com/images/premium/previews/3755/3755023-so-soft.jpg');
+        }
+        .navbar-brand {
+            font-size: 2em;
+            font-weight: bold;
+            color: #12a512;
+        }
+        .nav-link {
+            color: #c72576;
+        }
+        .nav-link:hover {
+            color: #6eb81f;
+        }
+        .search-panel {
+            border-right: 2px solid #ddd;
+            padding-right: 20px;
+        }
+        .selected {
+            background-color: #6e9276; 
+        }
+        .results {
+            padding-left: 20px;
+        }
+        .search-input {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">BOOKBYTE</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-4 search-panel">
+                <h5>CART</h5>
+                <div class="flex flex-col items-center">
+                    <div class="flex flex-col gap-4">
+                        <button id="placeOrder" class="btn btn-outline-success my-2 my-sm-0" type="button">Place Order</button>
+                        <button id="removeFromCart" class="btn btn-outline-success my-2 my-sm-0" type="button">Remove From Cart</button>
+                        <button id="confirmOrder" class="btn btn-outline-success my-2 my-sm-0" type="button" style="display: none;">Confirm Order</button>
+                    </div>
+                    <div class="mt-4">
+                        <label for="totalPrice">Total Price:</label>
+                        <input type="text" id="totalPrice" class="form-control" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <h5 class="mt-4">Cart</h5>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">ISBN</th>
+                            <th scope="col">Book Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartTableBody">
+                        <% cartItems.forEach(function(cartItems) { %>
+                            <tr>
+                              <td><%= cartItems[0] %></td>
+                              <td><%= cartItems[1] %></td>
+                            </tr>
+                          <% }); %>
+                          
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<script>
+$(document).ready(function() {  
+    var selectedRows = [];
+    $('#cartTableBody').on('click', 'tr', function() {
+        $(this).toggleClass('selected');
+        updateSelectedRows();
+    });
+
+    $('#removeFromCart').on('click', function() {
+        $.post('/removeFromCart', { selectedRows: selectedRows })
+            .done(function(response) {
+            })
+            .fail(function(error) {
+                console.error('Error sending selected rows info to the backend:', error);
+            });
+        }); 
+
+    function updateSelectedRows() {
+        selectedRows = [];
+        $('#cartTableBody').find('tr.selected').each(function() {
+            var isbn = $(this).find('td:eq(0)').text();
+            var bookCount = $(this).find('td:eq(1)').text();
+            selectedRows.push({ isbn: isbn, book_count: bookCount });
+        });
+    }
+    $('#placeOrder').on('click', function() {
+    $.post('/placeOrder', { selectedRows: selectedRows })
+    .done(function(response) {
+        $('#totalPrice').val(response.totalPrice);
+        $('#confirmOrder').show();
+    })
+    .fail(function(error) {
+        console.error('Error sending selected rows info to the backend:', error);
+    });
+});
+
+$('#confirmOrder').on('click', function() {
+    $.post('/confirmOrder', { selectedRows: selectedRows })
+    .done(function(response) {
+        console.log('Order confirmed');
+    })
+    .fail(function(error) {
+        console.error('Error sending selected rows info to the backend:', error);
+    });
+});
+     
+});
+
+function fetchCartItems() {
+    $.get('/cart', { userId: userId }, function(data) {
+        $('#cartTableBody').empty();
+        data.forEach(function(cartItem) {
+            $('#cartTableBody').append(`
+                <tr>
+                    <td>${cartItem.ISBN}</td>
+                    <td>${cartItem.BOOK_COUNT}</td>
+                </tr>
+            `);
+        });
+    })
+    .fail(function(error) {
+        console.error('Error fetching cart items:', error);
+    });
+}
+</script>

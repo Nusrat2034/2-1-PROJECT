@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="your-auth.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Users</title>
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <style>
+        body {
+           background-image: url('https://images.freeimages.com/images/previews/47e/soft-photos-1159178.jpg');
+        }
+        .navbar-brand {
+            font-size: 2em;
+            font-weight: bold;
+            color: #12a512;
+        }
+        .nav-link {
+            color: #c72576;
+        }
+        .nav-link:hover {
+            color: #6eb81f;
+        }
+        .search-panel {
+            border-right: 2px solid #ddd;
+            padding-right: 20px;
+        }
+        .selected {
+        background-color: #6e9276; 
+        }
+        .results {
+            padding-left: 20px;
+        }
+        .search-input {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<script>
+    $(document).ready(function() {
+        function handleRowSelection() {
+            $('tr').removeClass('selected');
+            $(this).addClass('selected');
+        }
+    
+        
+        $('#booksTableBody').on('click', 'tr', handleRowSelection);
+    
+        $('#removeuser').on('click', function() {
+            
+            const selectedUserId = $('.selected').find('td:eq(0)').text();
+            $.post('/removeuser', { USER_ID: selectedUserId })
+                .done(function(response) {
+                    alert(response.message);
+                })
+                .fail(function(error) {
+                    console.error('Error removing user:', error);
+                    alert('An error occurred while removing the user.');
+            });
+        });
+    });
+    </script>
+    
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">BOOKBYTE FOR ADMIN</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-4">
+            <div class="col-md-4">
+                <button id="removeuser" class="btn btn-danger">Remove User</button>
+            </div>
+        </div>
+            <div class="col-md-8">
+                <h5 class="mt-4">Registered Users</h5>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">USER_ID</th>
+                            <th scope="col">F_NAME</th>
+                            <th scope="col">L_NAME</th>
+                            <th scope="col">EMAIL</th>
+                            <th scope="col">PASSWORD</th>
+                            <th scope="col">DATE_OF_BIRTH</th>
+                            <th scope="col">STREET</th>
+                            <th scope="col">CITY</th>
+                            <th scope="col">COUNTRY</th>
+                        </tr>
+                    </thead>
+                        
+                        <tbody id="booksTableBody">
+                          <% users.forEach(function(user) { %>
+                              <tr>
+                                 <td><%= user[0] %></td>
+                                  <td><%= user[1] %></td>
+                                  <td><%=user[2] %></td> 
+                                  <td>$<%=user[3] %></td> 
+                                  <td><%= user[4] %></td> 
+                                  <td><%= user[5] %></td> 
+                                  <td>$<%=user[6] %></td> 
+                                  <td><%= user[7] %></td> 
+                                  <td><%= user[8] %></td> 
+                              </tr>
+                          <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

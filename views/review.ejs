@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Reviews</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+
+body {
+ background-image:url('https://cdn.pixabay.com/photo/2016/01/14/22/31/stars-1140888_640.jpg');
+font-family: 'Arial', sans-serif;
+line-height: 1.6;
+}
+
+.container {
+width: 80%;
+margin: auto;
+overflow: hidden;
+}
+
+h2 {
+text-align: center;
+margin: 20px 0;
+}
+
+table {
+width: 100%;
+margin-bottom: 20px;
+border-collapse: collapse;
+}
+
+table, th, td {
+border: 1px solid #ddd;
+}
+
+th, td {
+text-align: left;
+padding: 10px;
+}
+
+th {
+background-color: #f2f2f2;
+}
+
+tbody tr:nth-child(odd) {
+background-color: #fbfbfb;
+}
+
+tbody tr:hover {
+background-color: #f1f1f1;
+}
+
+@media screen and (max-width: 600px) {
+.container {
+    width: 100%;
+}
+
+table {
+    display: block;
+    overflow-x: auto;
+}
+} 
+    </style>     
+</head>
+<body>
+    <div class="container">
+        <h2>Book Reviews</h2>
+        <table id="reviewTable">
+            <thead>
+                <tr>
+                    <th>User Email</th>
+                    <th>Book Name</th>
+                    <th>Review Point</th>
+                    <th>Review Text</th>
+                    <th>Review Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% reviews.forEach(review => { %>
+                    <tr>
+                        <td><%= review[0] %></td> 
+                        <td><%= review[1] %></td> 
+                        <td><%= review[2] %></td> 
+                        <td><%= review[3]%></td>
+                        <td><%= new Date(review[4]).toLocaleString() %></td> 
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

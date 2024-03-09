@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login or Signup</title>
+    <style>
+        body {
+            background-image: url('https://gosparkpress.com/wp-content/uploads/2015/11/shutterstock_295100072.jpg');
+            background-color: #f3f3f3;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+        }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition-duration: 0.4s;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .button-login {
+            background-color: #2196F3;
+        }
+        .button-login:hover {
+            background-color: #0b7dda;
+        }
+        .button-signup {
+            background-color: #f44336;
+        }
+        .button-signup:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <h1>You need to be logged in to continue.</h1>
+    <p>If you have an account, please log in. Otherwise, sign up now!</p>
+    <div class="button-container">
+        <a href="/login" class="button button-login">Login</a>
+        <a href="/signup" class="button button-signup">Signup</a>
+    </div>
+</body>
+</html>

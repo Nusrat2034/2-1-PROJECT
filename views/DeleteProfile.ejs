@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+           background-image: url('https://cdn.mos.cms.futurecdn.net/6c3s8rMup3oTAUKywn4UTT.jpg');
+       }
+    </style>   
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Profile</title>
+</head>
+<body>
+    <h1>Delete Profile</h1>
+    <p>Your profile will be deleted after 30 days of inactivity.</p>
+    <p>Please note that this action cannot be undone.</p>
+
+    <button id="confirmDeleteButton">Confirm Delete</button>
+
+    <script>
+        function deleteProfile() {
+            fetch('/deleteProfile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: 'Delete profile request' }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Profile deleted successfully');
+                } else {
+                    console.error('Failed to delete profile');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete your profile?')) {
+                deleteProfile();
+            }
+        });
+    </script>
+</body>
+</html>

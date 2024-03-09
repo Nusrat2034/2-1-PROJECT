@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADD NEW BOOK - BOOKBYTE</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+           background-image:url('https://www.thebookcafe.in/wp-content/uploads/2014/09/books.jpg');
+            font-size: 0.9rem;
+            background-color: #f7f7f7;
+        }
+        .container {
+            max-width: 600px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #5cb85c;
+            border-color: #5cb85c;
+        }
+        .btn-primary:hover {
+            background-color: #4cae4c;
+            border-color: #4cae4c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">ADD NEW BOOK IN BOOKBYTE</h2>
+    <form action="/addnewbook" method="post">
+        <div class="form-group">
+            <label for="ISBN">ISBN:</label>
+            <input type="text" class="form-control" id="ISBN" name="ISBN" required>
+        </div>
+        <div class="form-group">
+            <label for="TITLE">TITLE:</label>
+            <input type="text" class="form-control" id="TITLE" name="TITLE" required>
+        </div>
+        <div class="form-group">
+            <label for="EDITION">EDITION:</label>
+            <input type="text" class="form-control" id="EDITION" name="EDITION" required>
+        </div>      
+        <div class="form-group">
+            <label for="PUBLICATION_DATE">PUBLICATION_DATE:</label>
+            <input type="date" class="form-control" id="PUBLICATION_DATE" name="PUBLICATION_DATE" required>
+        </div>
+        <div class="form-group">
+            <label for="PRICE">PRICE:</label>
+            <input type="text" class="form-control" id="PRICE" name="PRICE" required>
+        </div>
+        <div class="form-group">
+            <label for="STOCK">STOCK:</label>
+            <input type="text" class="form-control" id="STOCK" name="STOCK" required>
+        </div>
+        <div class="form-group">
+            <label for="DISCOUNT">DISCOUNT:</label>
+            <input type="text" class="form-control" id="DISCOUNT" name="DISCOUNT" required>
+        </div>
+        <div class="form-group">
+            <label for="CATEGORY">CATEGORY:</label>
+            <input type="text" class="form-control" id="CATEGORY" name="CATEGORY" required>
+        </div>
+        <div class="form-group">
+            <label for="AUTHOR_NAME">AUTHOR NAME:</label>
+            <input type="text" class="form-control" id="AUTHOR_NAME" name="AUTHOR_NAME" required>
+        </div>
+        <div class="form-group">
+            <label for="PUBLISHER">PUBLISHER:</label>
+            <input type="text" class="form-control" id="PUBLISHER" name="PUBLISHER" required>
+        </div>
+        <button type="addnewbook" class="btn btn-primary btn-block">ADD NEW BOOK</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

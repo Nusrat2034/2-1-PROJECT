@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="your-auth.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Inventory</title>
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <style>
+        body {
+            background-image: url('https://cdn.wallpapersafari.com/92/65/5i71OW.jpg');
+        }
+        .navbar-brand {
+            font-size: 2em;
+            font-weight: bold;
+            color: #12a512;
+        }
+        .nav-link {
+            color: #c72576;
+        }
+        .nav-link:hover {
+            color: #6eb81f;
+        }
+        .search-panel {
+            border-right: 2px solid #ddd;
+            padding-right: 20px;
+        }
+        .selected {
+        background-color: #6e9276; 
+        }
+        .results {
+            padding-left: 20px;
+        }
+        .search-input {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<script>
+    $(document).ready(function() {
+        function updateTable(results) {
+            $('#booksTableBody').empty();
+            
+            results.forEach(function(book) {
+                const row = $('<tr>');
+                row.append($('<td>').text(book.ISBN));   
+                row.append($('<td>').text(book.TITLE)); 
+                row.append($('<td>').text(book.EDITION)); 
+                row.append($('<td>').text('$' + parseFloat(book.PRICE).toFixed(2))); 
+                row.append($('<td>').text(book.STATUS)); 
+                row.append($('<td>').text(book.STOCK)); 
+                row.append($('<td>').text(parseFloat(book.DISCOUNT).toFixed(2) + '%')); 
+
+                $('#booksTableBody').append(row);
+            });
+        }
+
+        function fetchAllBooksAndUpdateTable() {
+            $.get('/home', function(books) {
+                updateTable(books);
+            });
+        }
+
+        fetchAllBooksAndUpdateTable();
+
+        $('#searchButton').on('click', function() {
+            const name = $('#searchName').val().toLowerCase();
+            const author = $('#searchAuthor').val().toLowerCase();
+            const category = $('#searchCategory').val().toLowerCase();
+            const publisher = $('#searchPublisher').val().toLowerCase();
+            const lowPrice = parseFloat($('#searchLowPrice').val());
+            const highPrice = parseFloat($('#searchHighPrice').val());
+            
+            $.get('/search', { name, author, category, publisher, lowPrice, highPrice })
+                .done(function(results) {
+                    updateTable(results);
+                })
+                .fail(function(error) {
+                    console.error('Error during search:', error);
+                });
+        });
+    });
+    $(document).ready(function() {
+$('#booksTableBody').on('click', 'tr', function() {
+    $('tr').removeClass('selected');
+    $(this).addClass('selected');
+});
+
+function getSelectedRowInfo() {
+    var selectedRow = $('.selected');
+    return {
+        isbn: selectedRow.find('td:eq(0)').text(), 
+        title: selectedRow.find('td:eq(1)').text(),
+        edition: selectedRow.find('td:eq(2)').text(),
+        price: parseFloat(selectedRow.find('td:eq(3)').text().replace('$', '')),
+        status: selectedRow.find('td:eq(4)').text(),
+        stock: parseInt(selectedRow.find('td:eq(5)').text()),
+        discount: parseFloat(selectedRow.find('td:eq(6)').text().replace('%', ''))
+    };
+}
+
+
+    $('#addToCart').on('click', function() {
+    console.log('add to cart clicked');// 
+    const userId = $('#userId').val(); 
+    const selectedRowInfo = getSelectedRowInfo();
+    const quantity = $('#quantity').val();
+
+    const cartItem = {
+        userId: userId,
+        selectedRowInfo: selectedRowInfo,
+        quantity: quantity
+    };
+
+    $.post('/addToCart', cartItem)
+        .done(function(response) {
+            $('#errorAlert').hide(); 
+        })
+
+        .fail(function(jqXHR) {
+            const response = JSON.parse(jqXHR.responseText);
+            $('#errorAlert').text(response.message).show(); 
+        });
+    });
+
+
+    $('#postReview').on('click', function() {
+        const selectedRowInfo = getSelectedRowInfo();
+        const rating = $('#rating').val();
+        const review = $('#review').val();
+       
+    $.post('/postReview', { selectedRowInfo: selectedRowInfo, rating: rating, review: review })
+        .done(function(response) {
+        })
+        .fail(function(error) {
+            console.error('Error posting review:', error);
+        });
+    });
+
+
+    $('#showCart').on('click', function() { 
+    const userId = $('#userId').val(); 
+        const info = {
+            userId: userId,
+        };
+        window.location.href = '/cart';
+        $.post('/cart',info)
+            .done(function(response) {
+            })
+            .fail(function(error) {
+                console.error('Error sending  data to the backend:', error);
+        });
+        
+    });
+
+    $('#showDetails').on('click', function() {
+    const selectedRowInfo = getSelectedRowInfo();
+    $.post('/showdetails', selectedRowInfo)
+        .done(function(response) {
+            $('.container').html(response);
+        })
+        .fail(function(error) {
+            console.error('Error sending book info:', error);
+        });
+    });
+
+
+    function getUserId() {
+        return $('#userId').val();
+    }
+});
+</script>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">BOOKBYTE</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <input type="hidden" id="userId" value="<%= user ? user.id : '' %>">
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/review">Show Review <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/DeleteProfile">Delete Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/reqbook">Request Book</a>
+                </li>
+            
+            </ul>
+            
+           <a href="/EditProfile?userId=<%= user.id %>" class="text-blue-500 hover:underline">Edit Profile</a>
+           
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <span class="nav-link">Welcome, <%= user ? user.username : 'Guest' %></span>
+                </li>
+            </ul>
+        </div>
+    </nav>
+     <div class="container mt-4">
+        <div class="row">
+              
+        <div class="col-md-4 search-panel">
+          <h5>Search Books</h5>
+          <input id="searchName" class="form-control search-input" type="text" placeholder="By Title" aria-label="Search by name">
+        <input id="searchAuthor" class="form-control search-input" type="text" placeholder="By Author" aria-label="Search by author">
+        <input id="searchCategory" class="form-control search-input" type="text" placeholder="By Category" aria-label="Search by category">
+        <input id="searchPublisher" class="form-control search-input" type="text" placeholder="By Publisher" aria-label="Search by Publisher">
+        <input id="searchLowPrice" class="form-control search-input" type="number" placeholder="Low Price" aria-label="Search by low price" style="width: 48%;">
+        <input id="searchHighPrice" class="form-control search-input" type="number" placeholder="High Price" aria-label="Search by high price" style="width: 48%;">
+        <button id="searchButton" class="btn btn-outline-success my-2 my-sm-0" type="button">Search</button>
+         
+        <div id="errorAlert" class="alert alert-danger" role="alert" style="display:none;"></div>
+        
+        <div class="flex flex-col items-center">
+            <div class="flex mb-2">
+                <input class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="quantity" type="number" placeholder="Quantity">
+            </div>
+            <div class="flex flex-col gap-4">
+                <button id="addToCart" class="btn btn-outline-success my-2 my-sm-0" type="button">addToCart</button>
+                <button id="showCart" class="btn btn-outline-success my-2 my-sm-0" type="button">ShowCart</button>
+                <button id="showDetails" class="btn btn-outline-success my-2 my-sm-0" type="button">ShowDetails</button>
+            </div>            
+        </div>
+
+        <div class="col-md-4">
+            <h5>Leave a Review</h5>
+            <input type="number" id="rating" class="form-control" placeholder="Rating" min="1" max="5">
+            <textarea id="review" class="form-control" placeholder="Review"></textarea>
+            <button id="postReview" class="btn btn-primary mt-2">Post Review</button>
+        </div>
+        
+            
+            <div class="col-md-8">
+               
+                <h5 class="mt-4">Book Inventory</h5>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">ISBN</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Edition</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Stock</th>
+                            <th scope="col">Discount</th>
+                        </tr>
+                    </thead>
+                        
+                        <tbody id="booksTableBody">
+                          <% books.forEach(function(book) { %>
+                              <tr>
+                                  <td><%= book[0] %></td>
+                                  <td><%= book[1] %></td> 
+                                  <td><%= book[2] %></td> 
+                                  <td>$<%= parseFloat(book[6]).toFixed(2) %></td> 
+                                  <td><%= book[7] %></td> 
+                                  <td><%= book[8] %></td>
+                                  <td><%= parseFloat(book[9]).toFixed(2) %>%</td> 
+                              </tr>
+                          <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div> 
+    

@@ -1,0 +1,44 @@
+Here we have made an online Book Store named BookByte. Oracle is used as database, Node.js is used for backend ,Bootstrap is used for frontend and Express.js is also used for the developement.
+
+This website runs on our localhost. 
+
+1.An annoynimous user can search books and see the details of the books and reviews on books in this website but whenever he tries to select any row of the books table a thread is opened and tells him to log in or signup.
+
+2.After signing up ,an user needs to be log into the website.Then he can search on books,see all reviews,give review on books,add books to cart and see his/her cart items. User can also edit their profile or request to delete his/her profile.Soft delete is used for profile deletion.If the user don't log in 30days after requesting for deleting account then his/her account will be deleted permanently by scheduler. 
+
+3.From cart table user can order product,remove product from cart ,after ordering product total price is shown then confirming order places all orders to order table.After ordering books the books in the cart will automatically deleted from the cart by trigger.
+
+4.we have also designed admin side. An admin can see all books and see all users,see all reviews. He can see total sales,total order and total money in a time period.From all books an Admin can search books,edit books,delete books ,add new books,get an average rating on a book.He also can increase or decrease the discount by an amount. From all users page admin can remove any user if he wants.
+
+
+If admin removes any user or any book then in log tables will save the information of the deleted books and deleted users with time and current user of     the database.
+
+There is also a dedicated table to log which procedure or function is called when, by which user, and with which parameter(s).
+
+
+
+
+Rubrics:
+
+Insert = 14
+Spanning insert = 2
+
+Update = 13
+
+Delete = 4
+Cascade Delete = 2
+Soft Delete = 1
+
+Advanced search  = 8
+joining 3 or more tables = 2 
+
+Procedures = 6
+Bulk Processing = 1
+
+Functions = 6
+
+Triggers = 8
+
+
+
+
